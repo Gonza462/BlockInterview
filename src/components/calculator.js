@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Button from '@material-ui/core/Button';
 import { withStyles } from '@material-ui/core';
 import PropTypes from 'prop-types';
+import { evalExpression } from '../util/evaluateExpression';
 import '../index.css';
 
 const styles = {
@@ -37,54 +38,6 @@ function Calculator(props) {
   const [answer, setAnswer] = useState('');
   const operators = ['+', '-', '*'];
 
-  //safe eval() method alternative
-  const safeEval = (expr) => {
-    let parens = /\(([0-9+\-*/ .]+)\)/; // Regex for identifying parenthetical expressions
-    let exp = /(\d+(?:\.\d+)?) ?\^ ?(\d+(?:\.\d+)?)/; // Regex for identifying exponentials (x ^ y)
-    let mul = /(\d+(?:\.\d+)?) ?\* ?(\d+(?:\.\d+)?)/; // Regex for identifying multiplication (x * y)
-    let div = /(\d+(?:\.\d+)?) ?\/ ?(\d+(?:\.\d+)?)/; // Regex for identifying division (x / y)
-    let add = /(\d+(?:\.\d+)?) ?\+ ?(\d+(?:\.\d+)?)/; // Regex for identifying addition (x + y)
-    let sub = /(\d+(?:\.\d+)?) ?- ?(\d+(?:\.\d+)?)/; // Regex for identifying subtraction (x - y)
-
-    if (isNaN(Number(expr))) {
-      if (parens.test(expr)) {
-        let newExpr = expr.replace(parens, function (match, subExpr) {
-          return safeEval(subExpr);
-        });
-        return safeEval(newExpr);
-      } else if (exp.test(expr)) {
-        let newExpr = expr.replace(exp, function (match, base, pow) {
-          return Math.pow(Number(base), Number(pow));
-        });
-        return safeEval(newExpr);
-      } else if (mul.test(expr)) {
-        let newExpr = expr.replace(mul, function (match, a, b) {
-          return Number(a) * Number(b);
-        });
-        return safeEval(newExpr);
-      } else if (div.test(expr)) {
-        let newExpr = expr.replace(div, function (match, a, b) {
-          if (b !== 0) return Number(a) / Number(b);
-          else throw new Error('Division by zero');
-        });
-        return safeEval(newExpr);
-      } else if (add.test(expr)) {
-        let newExpr = expr.replace(add, function (match, a, b) {
-          return Number(a) + Number(b);
-        });
-        return safeEval(newExpr);
-      } else if (sub.test(expr)) {
-        let newExpr = expr.replace(sub, function (match, a, b) {
-          return Number(a) - Number(b);
-        });
-        return safeEval(newExpr);
-      } else {
-        return expr;
-      }
-    }
-    return Number(expr);
-  };
-
   const calculateExpression = (val) => {
     //prevent adjacent operators
     if (
@@ -96,7 +49,7 @@ function Calculator(props) {
     setCalc(calc + val);
     //console.log(val);
     if (!operators.includes(val)) {
-      setAnswer(safeEval(calc + val).toString());
+      setAnswer(evalExpression(calc + val).toString());
     }
   };
 
@@ -119,7 +72,7 @@ function Calculator(props) {
 
   //set calculations
   const evaulate = () => {
-    setCalc(safeEval(calc).toString());
+    setCalc(evalExpression(calc).toString());
   };
 
   //delete last number entered

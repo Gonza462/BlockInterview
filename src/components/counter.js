@@ -22,7 +22,6 @@ function Counter(props) {
   const counter = useSelector((state) => state.counter.count);
 
   var increaseCount = () => {
-    console.log(classes.root);
     dispatch(increment());
   };
   var decreaseCount = () => {
